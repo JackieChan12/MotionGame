@@ -36,7 +36,7 @@ public class HurdleRaceController : MonoBehaviour
     private float speedUpdateInterval = 1f;
 
     public float point;
-    Animator animator;
+    public Animator animator;
     float minMainZ = 2.5f, maxMainZ = 3.5f;
     bool isPreLeft = false, isPreRight = false;
     int detectAction = 0; //1: jump, 2: crouch, 3: run
@@ -52,41 +52,33 @@ public class HurdleRaceController : MonoBehaviour
     {
         textPoint.text = point.ToString("N0");
         point = pathFollower.distanceTravelled;
-        if (startGame)
-        {
+        if (startGame) {
             List<Skeleton> userData = NuitrackManager.SkeletonTracker?.GetSkeletonData().Skeletons.ToList();
             userData = FilterSkeleton(userData);
-            
+
             detectAction = DetectAction(userData.Count > 0 ? userData[indexPlayer] : null);
             if (detectAction == 1) // jump
             {
                 curSpeed = 1f;
                 animator.Play("jump");
-            }
-            else if (detectAction == 2) // crouch
-            {
+            } else if (detectAction == 2) // crouch
+              {
                 //animator.SetTrigger("Crouch");
-            }
-            else
-            {
+            } else {
                 Movement_Stepping(userData[indexPlayer]);
             }
 
-                pathFollower.speed = curSpeed;
-            if (curSpeed > 0)
-            {
+            pathFollower.speed = curSpeed;
+            if (curSpeed > 0) {
                 animator.Play("run");
-            }
-            else
-            {
+            } else {
                 animator.Play("idle");
             }
             xPlayer = NuitrackManager.SkeletonTracker != null ? NuitrackManager.SkeletonTracker.GetSkeletonData().Skeletons[indexPlayer].GetJoint(JointType.Head).Real.X : 0;
 
-        }
-        else
-        {
-            animator.SetBool("Run", false);
+        } else {
+            pathFollower.speed = 0;
+            animator.Play("idle");
         }
     }
     public int DetectAction(Skeleton skeleton) { 
@@ -158,5 +150,12 @@ public class HurdleRaceController : MonoBehaviour
         isPreRight = rightStep;
         return r;
 
+    }
+
+    private void OnCollisionEnter(Collision collision) {
+        if(collision.gameObject.layer == 13) {
+            //Debug.Log("Varrrrrr");
+            pathFollower.distanceTravelled = 0;
+        }
     }
 }
