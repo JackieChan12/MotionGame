@@ -29,6 +29,7 @@ public class HurdleRaceController : MonoBehaviour
     public TMP_Text textPoint;
     public Camera cam;
     public bool startGame = false;
+    public bool isDead = false;
     public float curSpeed = 0;
     public int indexMovement = 0;
 
@@ -50,6 +51,7 @@ public class HurdleRaceController : MonoBehaviour
     // Update is called once per frame 
     void Update()
     {
+        if(isDead) return;
         textPoint.text = point.ToString("N0");
         point = pathFollower.distanceTravelled;
         if (startGame) {
@@ -154,8 +156,18 @@ public class HurdleRaceController : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision) {
         if(collision.gameObject.layer == 13) {
-            //Debug.Log("Varrrrrr");
-            pathFollower.distanceTravelled = 0;
+            StartCoroutine(OnObstacle());
         }
     }
+    IEnumerator OnObstacle()
+    {
+        curSpeed = 0;
+        pathFollower.speed = 0;
+        isDead = true;
+        animator.Play("death");
+        yield return new WaitForSeconds(3.5f);
+        pathFollower.distanceTravelled = 0;
+        isDead = false;
+        animator.Play("idle");
+    } 
 }
