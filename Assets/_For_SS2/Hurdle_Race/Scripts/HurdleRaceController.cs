@@ -30,6 +30,7 @@ public class HurdleRaceController : MonoBehaviour
     public Camera cam;
     public bool startGame = false;
     public bool isDead = false;
+    public bool isJump = false;
     public float curSpeed = 0;
     public int indexMovement = 0;
 
@@ -51,7 +52,8 @@ public class HurdleRaceController : MonoBehaviour
     // Update is called once per frame 
     void Update()
     {
-        if(isDead) return;
+        if (isJump) return;
+        if (isDead) return;
         textPoint.text = point.ToString("N0");
         point = pathFollower.distanceTravelled;
         if (startGame) {
@@ -63,6 +65,7 @@ public class HurdleRaceController : MonoBehaviour
             {
                 curSpeed = 1f;
                 animator.Play("jump");
+                StartCoroutine(OnJump());
             } else if (detectAction == 2) // crouch
               {
                 //animator.SetTrigger("Crouch");
@@ -169,5 +172,12 @@ public class HurdleRaceController : MonoBehaviour
         pathFollower.distanceTravelled = 0;
         isDead = false;
         animator.Play("idle");
-    } 
+    }
+
+    IEnumerator OnJump() {
+        isJump = true;
+        yield return new WaitForSeconds(0.9f);
+        isJump = false;
+        animator.Play("idle");
+    }
 }
