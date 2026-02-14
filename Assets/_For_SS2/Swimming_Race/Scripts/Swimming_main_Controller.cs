@@ -1,18 +1,18 @@
+using nuitrack;
 using System.Collections;
 using System.Collections.Generic;
-using nuitrack;
 using System.Linq;
 using TMPro;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
-public class HurdleRaceMainController : MonoBehaviour
+public class Swimming_main_Controller : MonoBehaviour
 {
     [Header("Player Control")]
-    public HurdleRaceController player01;
-    public HurdleRaceController player02;
-    public HurdleRaceController player03;
+    public SwimmingRaceController player01;
+    public SwimmingRaceController player02;
+    public SwimmingRaceController player03;
 
     //public Camera cameraPlayer01;
     //public Camera cameraPlayer02;
@@ -23,7 +23,7 @@ public class HurdleRaceMainController : MonoBehaviour
 
     Rect r;
     List<Skeleton> newSkeleton = new List<Skeleton>();
-    public List<HurdleRaceController> animals;
+    public List<SwimmingRaceController> animals;
 
     [Header("Game")]
 
@@ -42,9 +42,7 @@ public class HurdleRaceMainController : MonoBehaviour
     int countPlayers = 0;
     public TMP_Text txtCountPlayer;
 
-    public GameObject obstacle_Easy;
-    public GameObject obstacle_Normal;
-    public GameObject obstacle_Hard;
+    public GenerateObstacleInRace generateObstacleInRace;
 
     [Header("Input")]
     public Mode mode;
@@ -63,46 +61,39 @@ public class HurdleRaceMainController : MonoBehaviour
     public int count = 1;
 
     [System.Obsolete]
-    void Start() {
+    void Start()
+    {
         if (InputManager.Instance != null) SetupInput(InputManager.Instance.mode, InputManager.Instance.difficulty, InputManager.Instance.players, InputManager.Instance.playTime, InputManager.Instance.explanation, InputManager.Instance.photoTime);
-        obstacle_Easy.SetActive(false);
-        obstacle_Normal.SetActive(false);
-        obstacle_Hard.SetActive(false);
-        switch (difficulty) {
-            case Difficulty.Easy:
-                obstacle_Easy.SetActive(true);
-                break;
-            case Difficulty.Normal:
-                obstacle_Normal.SetActive(true);
-                break;
-            case Difficulty.Hard:
-                obstacle_Hard.SetActive(true);
-                break;
-        }
+        generateObstacleInRace.SetupObstacle(difficulty);
         NuitrackManager.SkeletonTracker.SetNumActiveUsers(3);
         
-        
+
     }
 
     //// Update is called once per frame
     [System.Obsolete]
-    void Update() {
-        if (NuitrackManager.SkeletonTracker != null) {
+    void Update()
+    {
+        if (NuitrackManager.SkeletonTracker != null)
+        {
             List<Skeleton> userData = NuitrackManager.SkeletonTracker?.GetSkeletonData().Skeletons.ToList();
             //userData = FilterSkeleton(userData);
             ShowPlayer(userData);
         }
 
-        if (Input.GetKeyDown(KeyCode.Escape)) {
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
             nuitrack.Nuitrack.Release();
             SceneManager.LoadSceneAsync("InputSceneSS2");
             //Application.Quit(); 
         }
 
-        if (countdownFirst) {
+        if (countdownFirst)
+        {
             objectCountDown?.SetActive(true);
             countDown -= Time.deltaTime;
-            if (countDown <= 0) {
+            if (countDown <= 0)
+            {
                 //audioController?.PlayAudioStartGame();
                 countdownFirst = false;
                 countDown = 5;
@@ -115,21 +106,26 @@ public class HurdleRaceMainController : MonoBehaviour
         if (textTime != null) textTime.text = (playTime - timeCount).ToString("N0");//FormatTime(timeCount);
         if (imageTime != null) imageTime.fillAmount = (float)((playTime - timeCount) / playTime);
 
-        if (timeCount < playTime) {
+        if (timeCount < playTime)
+        {
             timeCount += Time.deltaTime;
         }
-        if (timeCount >= playTime && countDown == 5) {
+        if (timeCount >= playTime && countDown == 5)
+        {
 
             countPlayers++;
         }
-        if (timeCount >= playTime && countDown > 0) {
+        if (timeCount >= playTime && countDown > 0)
+        {
             objectCountDown?.SetActive(true);
             countDown -= Time.deltaTime;
             noticeTimeOut?.SetActive(true);
             player01.startGame = false;
             player02.startGame = false;
             player03.startGame = false;
-        } else if (countDown <= 0) {
+        }
+        else if (countDown <= 0)
+        {
             EndGame();
 
         }
@@ -138,7 +134,8 @@ public class HurdleRaceMainController : MonoBehaviour
     [System.Obsolete]
 
 
-    public void SetupInput(Mode m, Difficulty d, int p, float t, bool e, bool pT) {
+    public void SetupInput(Mode m, Difficulty d, int p, float t, bool e, bool pT)
+    {
         mode = m;
         difficulty = d;
         players = p;
@@ -147,18 +144,22 @@ public class HurdleRaceMainController : MonoBehaviour
         photoTime = pT;
     }
 
-    public void EndGame() {
+    public void EndGame()
+    {
         nuitrack.Nuitrack.Release();
         InputManager.Instance?.SavePoint(pointTeam1, pointTeam2);
         SceneManager.LoadSceneAsync(_nextScene);
     }
     float minMainZ = 2.5f, maxMainZ = 3.5f;
-    public List<Skeleton> FilterSkeleton(List<Skeleton> user) {
+    public List<Skeleton> FilterSkeleton(List<Skeleton> user)
+    {
 
         newSkeleton.Clear();
-        foreach (Skeleton s in user) {
+        foreach (Skeleton s in user)
+        {
             float z = s.GetJoint(JointType.Torso).Real.Z / 1000;
-            if (z >= minMainZ && z <= maxMainZ) {
+            if (z >= minMainZ && z <= maxMainZ)
+            {
                 newSkeleton.Add(s);
             }
         }
@@ -166,11 +167,13 @@ public class HurdleRaceMainController : MonoBehaviour
         return newSkeleton;
     }
 
-    public void ShowPlayer(List<Skeleton> user) {
+    public void ShowPlayer(List<Skeleton> user)
+    {
         int c = user.Count;
         //c = count;
         txtCountPlayer.text = $"{c} players";
-        if (c >= 3) {
+        if (c >= 3)
+        {
             animals = animals.OrderByDescending(a => a.xPlayer).ToList();
             player01.gameObject.SetActive(true);
             player02.gameObject.SetActive(true);
@@ -203,7 +206,9 @@ public class HurdleRaceMainController : MonoBehaviour
 
             animals[2].cam.rect = r;
             animals[2].textPoint = textPoint03;
-        } else if (c >= 2) {
+        }
+        else if (c >= 2)
+        {
             player01.gameObject.SetActive(true);
             player02.gameObject.SetActive(true);
             player03.gameObject.SetActive(false);
@@ -225,7 +230,9 @@ public class HurdleRaceMainController : MonoBehaviour
             r.height = 1;
 
             if (player02.xPlayer < player01.xPlayer) { player02.cam.rect = r; player02.textPoint = textPoint02; } else { player01.cam.rect = r; player01.textPoint = textPoint02; }
-        } else if (c >= 1) {
+        }
+        else if (c >= 1)
+        {
             player01.gameObject.SetActive(true);
             player02.gameObject.SetActive(false);
             player03.gameObject.SetActive(false);
@@ -242,7 +249,9 @@ public class HurdleRaceMainController : MonoBehaviour
 
             player01.cam.rect = r;
             player01.textPoint = textPoint01;
-        } else if (c == 0) {
+        }
+        else if (c == 0)
+        {
             player01.gameObject.SetActive(true);
             player02.gameObject.SetActive(false);
             player03.gameObject.SetActive(false);

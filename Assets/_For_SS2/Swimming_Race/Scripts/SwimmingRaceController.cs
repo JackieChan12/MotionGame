@@ -1,12 +1,14 @@
-﻿using System;
+﻿using DG.Tweening;
+using nuitrack;
+using PathCreation;
+using PathCreation.Examples;
+using System;
 using System.Collections;
 using System.Collections.Generic;
-using nuitrack;
-using PathCreation.Examples;
-using PathCreation;
 using System.Linq;
 using TMPro;
 using UnityEngine;
+using UnityEngine.TextCore.Text;
 
 public class SwimmingRaceController : MonoBehaviour
 {
@@ -14,14 +16,14 @@ public class SwimmingRaceController : MonoBehaviour
 
     public List<Material> materials = new List<Material>();
     public SkinnedMeshRenderer skinnedMeshRenderer;
-
+    public Transform character;
     public float xPlayer;
     private float prevBodyHeight = 0.0f;
     private bool initialized = false;
     private const float jumpThreshold = 0.15f;
     private const float crouchThreshold = 0.15f;
 
-    [SerializeField] PathCreator creatorPath;
+    //[SerializeField] PathCreator creatorPath;
     [SerializeField] PathFollower pathFollower;
 
     public TMP_Text textPoint;
@@ -36,10 +38,11 @@ public class SwimmingRaceController : MonoBehaviour
     private float speedUpdateInterval = 1f;
 
     public float point;
+    public float plusPoint=0;
     public Animator animator;
     float minMainZ = 2.5f, maxMainZ = 3.5f;
     bool isPreLeft = false, isPreRight = false;
-    int detectAction = 0; //1: jump, 2: crouch, 3: run
+    int detectAction = 0; //1: jump, 2: crouch, 3: Swim
     void Awake() {
         Material[] mats = skinnedMeshRenderer.materials;
         mats[0] = materials[UnityEngine.Random.Range(0, materials.Count)];
@@ -51,7 +54,7 @@ public class SwimmingRaceController : MonoBehaviour
         if (isJump) return;
         if (isDead) return;
         textPoint.text = point.ToString("N0");
-        point = pathFollower.distanceTravelled;
+        point = pathFollower.distanceTravelled + plusPoint;
         if (startGame) {
             List<Skeleton> userData = NuitrackManager.SkeletonTracker?.GetSkeletonData().Skeletons.ToList();
             userData = FilterSkeleton(userData);
@@ -65,10 +68,12 @@ public class SwimmingRaceController : MonoBehaviour
             } else if (detectAction == 2) // crouch
               {
                 //animator.SetTrigger("Crouch");
+                curSpeed = 1f;
+                StartCoroutine(OnCrouch());
             } else {
                 Movement_Stepping(userData[indexPlayer]);
                 if (curSpeed > 0) {
-                    animator.Play("Run");
+                    animator.Play("Swim");
                 } else {
                     animator.Play("Idle_A");
                 }
@@ -80,7 +85,7 @@ public class SwimmingRaceController : MonoBehaviour
 
         } else {
             pathFollower.speed = 0;
-            animator.Play("idle");
+            animator.Play("Idle_A");
         }
     }
     public int DetectAction(Skeleton skeleton) {
@@ -151,22 +156,45 @@ public class SwimmingRaceController : MonoBehaviour
         if (collision.gameObject.layer == 13) {
             StartCoroutine(OnObstacle());
         }
+        if (collision.gameObject.layer == 14)
+        {
+            GameObject plus = collision.gameObject.transform.parent.gameObject;
+            plusPoint += 10f;
+            plus.transform.DOLocalMoveY(0.1f, .3f)
+                            .SetEase(Ease.OutQuad).OnComplete(()=> { Destroy(plus); });
+        }
     }
     IEnumerator OnObstacle() {
         curSpeed = 0;
         pathFollower.speed = 0;
         isDead = true;
         animator.Play("Death");
-        yield return new WaitForSeconds(3.5f);
+        yield return new WaitForSeconds(1f);
         pathFollower.distanceTravelled = 0;
         isDead = false;
         animator.Play("Idle_A");
     }
 
     IEnumerator OnJump() {
+        character.DOLocalMoveY(0.06f, .5f)
+                            .SetEase(Ease.OutQuad);
         isJump = true;
         yield return new WaitForSeconds(0.9f);
         isJump = false;
         animator.Play("Idle_A");
+        character.DOLocalMoveY(0f, .5f)
+                            .SetEase(Ease.OutQuad);
+    }
+
+    IEnumerator OnCrouch()
+    {
+        character.DOLocalMoveY(-0.06f, .5f)
+                            .SetEase(Ease.OutQuad);
+        isJump = true;
+        yield return new WaitForSeconds(0.9f);
+        isJump = false;
+        animator.Play("Idle_A");
+        character.DOLocalMoveY(0f, .5f)
+                            .SetEase(Ease.OutQuad);
     }
 }
