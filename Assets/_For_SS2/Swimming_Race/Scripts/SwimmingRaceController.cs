@@ -135,8 +135,8 @@ public class SwimmingRaceController : MonoBehaviour
     bool IsStepping(Skeleton skeleton) {
         nuitrack.Vector3 leftFoot = skeleton.GetJoint(JointType.LeftWrist).Real;
         nuitrack.Vector3 rightFoot = skeleton.GetJoint(JointType.RightWrist).Real;
-        //nuitrack.Vector3 torso = skeleton.GetJoint(JointType.Torso).Real;
-
+        nuitrack.Vector3 torso = skeleton.GetJoint(JointType.Torso).Real;
+        if (leftFoot.Y < torso.Y || rightFoot.Y < torso.Y) return false;
         //float baseFootHeight = torso.Y * 0.1f;
 
         bool leftStep = leftFoot.Y - rightFoot.Y > 5f;
