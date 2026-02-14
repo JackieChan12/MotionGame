@@ -60,24 +60,24 @@ public class SwimmingRaceController : MonoBehaviour
             userData = FilterSkeleton(userData);
 
             detectAction = DetectAction(userData.Count > 0 ? userData[indexPlayer] : null);
-            if (detectAction == 1) // jump
-            {
-                curSpeed = 1f;
-                animator.Play("Jump");
-                StartCoroutine(OnJump());
-            } else if (detectAction == 2) // crouch
-              {
-                //animator.SetTrigger("Crouch");
-                curSpeed = 1f;
-                StartCoroutine(OnCrouch());
-            } else {
+            //if (detectAction == 1) // jump
+            //{
+            //    curSpeed = 1f;
+            //    animator.Play("Jump");
+            //    StartCoroutine(OnJump());
+            //} else if (detectAction == 2) // crouch
+            //  {
+            //    //animator.SetTrigger("Crouch");
+            //    curSpeed = 1f;
+            //    StartCoroutine(OnCrouch());
+            //} else {
                 Movement_Stepping(userData[indexPlayer]);
                 if (curSpeed > 0) {
                     animator.Play("Swim");
                 } else {
                     animator.Play("Idle_A");
                 }
-            }
+            //}
 
             pathFollower.speed = curSpeed;
             
@@ -121,6 +121,8 @@ public class SwimmingRaceController : MonoBehaviour
         return newSkeleton;
     }
 
+    bool isSetheight = false;
+    float heightTorso = 0;
     public void Movement_Stepping(Skeleton userData) {
         if (IsStepping(userData) /*&& Time.time - lastStepTime > 0.5f*/) {
             stepCount++;
@@ -128,8 +130,34 @@ public class SwimmingRaceController : MonoBehaviour
 
         // Cập nhật tốc độ mỗi giây
         if (Time.frameCount % (int)(speedUpdateInterval / Time.deltaTime) == 0) {
-            curSpeed = Mathf.Clamp(stepCount / 2f, 0f, 2f); // Giới hạn từ 0 đến 2
-            stepCount = 0; // reset sau mỗi chu kỳ
+
+            if (!isSetheight)
+            {
+                heightTorso = userData.GetJoint(JointType.Torso).Real.Y;
+                isSetheight = true;
+            }
+            else
+            {
+                if (userData.GetJoint(JointType.Torso).Real.Y - heightTorso > 0.15f && isJump == false)
+                {
+                    stepCount = 0;
+                    curSpeed = 1;
+                    animator.Play("Jump");
+                    StartCoroutine(OnJump());
+                    // Tăng thêm bước nếu người chơi nhấc cao hơn
+                }
+                else if (userData.GetJoint(JointType.Torso).Real.Y - heightTorso < -0.15f && isJump == false) {
+                    stepCount = 0;
+                    curSpeed = 1;
+                    StartCoroutine(OnCrouch());
+                }
+                else if( isJump == false)
+                {
+                    curSpeed = Mathf.Clamp(stepCount / 2f, 0f, 2f); // Giới hạn từ 0 đến 2
+                    stepCount = 0;
+                }
+            }
+             // reset sau mỗi chu kỳ
         }
     } // 0
     bool IsStepping(Skeleton skeleton) {
@@ -142,7 +170,7 @@ public class SwimmingRaceController : MonoBehaviour
         bool leftStep = leftFoot.Y - rightFoot.Y > 5f;
         bool rightStep = rightFoot.Y - leftFoot.Y > 5f;
 
-        //Debug.LogWarning("AAAAAAAAAAAAAAAA" + (leftFoot.Z - rightFoot.Z) + " ; " + (rightFoot.Z - leftFoot.Z));
+        Debug.LogWarning("AAAAAAAAAAAAAAAA" + (leftFoot.Z - rightFoot.Z) + " ; " + (rightFoot.Z - leftFoot.Z));
 
         bool r = leftStep && !isPreLeft || rightStep && !isPreRight;
 
