@@ -58,7 +58,7 @@ public class AnimalRace_Movement : MonoBehaviour
         if (startGame)
         {
             List<Skeleton> userData = NuitrackManager.SkeletonTracker?.GetSkeletonData().Skeletons.ToList();
-            userData = FilterSkeleton(userData);
+            //userData = FilterSkeleton(userData);
             //Movement_Stepping(userData[indexPlayer]);
             //Movement_Flapping(userData[indexPlayer]);
             //Movement_Leanning(userData[indexPlayer]);

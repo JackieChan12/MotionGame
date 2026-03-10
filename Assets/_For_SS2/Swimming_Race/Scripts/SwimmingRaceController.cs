@@ -57,7 +57,7 @@ public class SwimmingRaceController : MonoBehaviour
         point = pathFollower.distanceTravelled + plusPoint;
         if (startGame) {
             List<Skeleton> userData = NuitrackManager.SkeletonTracker?.GetSkeletonData().Skeletons.ToList();
-            userData = FilterSkeleton(userData);
+            //userData = FilterSkeleton(userData);
 
             detectAction = DetectAction(userData.Count > 0 ? userData[indexPlayer] : null);
             //if (detectAction == 1) // jump
@@ -138,7 +138,7 @@ public class SwimmingRaceController : MonoBehaviour
             }
             else
             {
-                if (userData.GetJoint(JointType.Torso).Real.Y - heightTorso > 0.15f && isJump == false)
+                if (userData.GetJoint(JointType.Torso).Real.Y - heightTorso > 3f && isJump == false)
                 {
                     stepCount = 0;
                     curSpeed = 1;
@@ -146,7 +146,7 @@ public class SwimmingRaceController : MonoBehaviour
                     StartCoroutine(OnJump());
                     // Tăng thêm bước nếu người chơi nhấc cao hơn
                 }
-                else if (userData.GetJoint(JointType.Torso).Real.Y - heightTorso < -0.15f && isJump == false) {
+                else if (userData.GetJoint(JointType.Torso).Real.Y - heightTorso < -5f && isJump == false) {
                     stepCount = 0;
                     curSpeed = 1;
                     StartCoroutine(OnCrouch());
@@ -208,6 +208,7 @@ public class SwimmingRaceController : MonoBehaviour
                             .SetEase(Ease.OutQuad);
         isJump = true;
         yield return new WaitForSeconds(0.9f);
+        isSetheight = false;
         isJump = false;
         animator.Play("Idle_A");
         character.DOLocalMoveY(0f, .5f)
@@ -220,6 +221,7 @@ public class SwimmingRaceController : MonoBehaviour
                             .SetEase(Ease.OutQuad);
         isJump = true;
         yield return new WaitForSeconds(0.9f);
+        isSetheight = false;
         isJump = false;
         animator.Play("Idle_A");
         character.DOLocalMoveY(0f, .5f)

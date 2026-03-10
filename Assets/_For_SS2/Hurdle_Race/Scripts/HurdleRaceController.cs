@@ -8,7 +8,6 @@ using System.Drawing;
 using System.Linq;
 using TMPro;
 using UnityEngine;
-using static UnityEditor.Experimental.GraphView.GraphView;
 
 public class HurdleRaceController : MonoBehaviour
 {
@@ -58,7 +57,7 @@ public class HurdleRaceController : MonoBehaviour
         point = pathFollower.distanceTravelled;
         if (startGame) {
             List<Skeleton> userData = NuitrackManager.SkeletonTracker?.GetSkeletonData().Skeletons.ToList();
-            userData = FilterSkeleton(userData);
+            //userData = FilterSkeleton(userData);
 
             detectAction = DetectAction(userData.Count > 0 ? userData[indexPlayer] : null);
             if (detectAction == 1) // jump
