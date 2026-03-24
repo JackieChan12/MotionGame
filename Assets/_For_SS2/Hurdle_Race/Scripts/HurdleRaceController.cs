@@ -1,10 +1,8 @@
 ﻿using nuitrack;
 using PathCreation;
 using PathCreation.Examples;
-using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using TMPro;
 using UnityEngine;
@@ -17,10 +15,6 @@ public class HurdleRaceController : MonoBehaviour
     public SkinnedMeshRenderer skinnedMeshRenderer;
 
     public float xPlayer;
-    private float prevBodyHeight = 0.0f; 
-    private bool initialized = false; 
-    private const float jumpThreshold = 0.15f; 
-    private const float crouchThreshold = 0.15f;
 
     [SerializeField] PathCreator creatorPath;
     [SerializeField] PathFollower pathFollower;
@@ -33,14 +27,35 @@ public class HurdleRaceController : MonoBehaviour
     public float curSpeed = 0;
     public int indexMovement = 0;
 
-    private int stepCount = 0;
-    private float speedUpdateInterval = 1f;
-
     public float point;
     public Animator animator;
+
+    // ─── Running Detection ────────────────────────────────────────────
+    [Header("Running Detection")]
+    [Tooltip("Số bước tối thiểu trong 1 giây để nhân vật chạy (dưới mức này = đứng yên)")]
+    public int minStepsPerSecond = 2;
+    [Tooltip("Tốc độ tăng speed (lerp)")]
+    public float speedLerpUp = 5f;
+    [Tooltip("Tốc độ giảm speed (lerp) — nên nhanh hơn tăng")]
+    public float speedLerpDown = 10f;
+
+    private int   stepCount        = 0;
+    private float speedUpdateTimer = 0f;
+    private float speedUpdateInterval = 1f;
+    private float previous_z_left  = 0f;
+    private float previous_z_right = 0f;
+
+    // ─── Jump Detection ───────────────────────────────────────────────
+    [Header("Jump Detection")]
+    private float defaultHeightTorso = 0f;
+    private float heightJump       = 0f;
+    private bool  isInitialized    = false;
+
+    // ─── Misc ─────────────────────────────────────────────────────────
     float minMainZ = 2.5f, maxMainZ = 3.5f;
-    bool isPreLeft = false, isPreRight = false;
-    int detectAction = 0; //1: jump, 2: crouch, 3: run
+
+    // ─────────────────────────────────────────────────────────────────
+
     void Awake()
     {
         Material[] mats = skinnedMeshRenderer.materials;
@@ -48,125 +63,144 @@ public class HurdleRaceController : MonoBehaviour
         skinnedMeshRenderer.materials = mats;
     }
 
-    // Update is called once per frame 
     void Update()
     {
         if (isJump) return;
         if (isDead) return;
+
         textPoint.text = point.ToString("N0");
         point = pathFollower.distanceTravelled;
-        if (startGame) {
-            List<Skeleton> userData = NuitrackManager.SkeletonTracker?.GetSkeletonData().Skeletons.ToList();
-            //userData = FilterSkeleton(userData);
 
-            detectAction = DetectAction(userData.Count > 0 ? userData[indexPlayer] : null);
-            if (detectAction == 1) // jump
+        if (startGame)
+        {
+            List<Skeleton> userData = NuitrackManager.SkeletonTracker?.GetSkeletonData().Skeletons.ToList();
+
+            if (userData == null || userData.Count <= indexPlayer)
+            {
+                pathFollower.speed = 0;
+                animator.Play("idle");
+                return;
+            }
+
+            Skeleton skeleton = userData[indexPlayer];
+
+            // 1. Kiểm tra nhảy trước (ưu tiên cao hơn chạy)
+            if (DetectJump(skeleton))
             {
                 curSpeed = 1f;
                 animator.Play("jump");
                 StartCoroutine(OnJump());
-            } else if (detectAction == 2) // crouch
-              {
-                //animator.SetTrigger("Crouch");
-            } else {
-                Movement_Stepping(userData[indexPlayer]);
-                if (curSpeed > 0) {
+            }
+            else
+            {
+                // 2. Nhận diện chạy / đứng yên
+                DetectRunning(skeleton);
+
+                if (curSpeed > 0.05f)
                     animator.Play("run");
-                } else {
+                else
                     animator.Play("idle");
-                }
             }
 
             pathFollower.speed = curSpeed;
-            
-            xPlayer = NuitrackManager.SkeletonTracker != null ? NuitrackManager.SkeletonTracker.GetSkeletonData().Skeletons[indexPlayer].GetJoint(JointType.Head).Real.X : 0;
 
-        } else {
+            xPlayer = skeleton.GetJoint(JointType.Head).Real.X;
+        }
+        else
+        {
             pathFollower.speed = 0;
             animator.Play("idle");
         }
     }
-    public int DetectAction(Skeleton skeleton) { 
-        if (skeleton == null) return 0; 
-        float headY = skeleton.Joints[(int)JointType.Head].Real.Y; 
-        float leftFootY = skeleton.Joints[(int)JointType.LeftFoot].Real.Y; 
-        float rightFootY = skeleton.Joints[(int)JointType.RightFoot].Real.Y; 
-        float bodyHeight = headY - Math.Min(leftFootY, rightFootY); 
-        if (!initialized) { 
-            prevBodyHeight = bodyHeight; 
-            initialized = true; return 0; 
-        } 
-        float deltaHeight = bodyHeight - prevBodyHeight; 
-        if (deltaHeight > jumpThreshold) { 
-            return 1; // Nhảy
-        } else if (deltaHeight < -crouchThreshold) { 
-            return 2; // Cúi xuống
-        }
-        prevBodyHeight = bodyHeight; 
-        return 3;
-    }
 
-    public List<Skeleton> FilterSkeleton(List<Skeleton> user)
+    // ──────────────────────────────────────────────────────────────────
+    // NHẢY: Dựa vào logic HurdleRaceNew (Tính từ khoảng cách cổ đến bụng)
+    // ──────────────────────────────────────────────────────────────────
+    bool DetectJump(Skeleton skeleton)
     {
-        List<Skeleton> newSkeleton = new List<Skeleton>();
+        float neckY = Mathf.Floor(skeleton.GetJoint(JointType.Neck).Real.Y / 10f);
+        float torsoY = Mathf.Floor(skeleton.GetJoint(JointType.Torso).Real.Y / 10f);
 
-        foreach (Skeleton s in user)
+        if (!isInitialized)
         {
-            float z = s.GetJoint(JointType.Torso).Real.Z / 1000;
-            if (z >= minMainZ && z <= maxMainZ)
-            {
-                newSkeleton.Add(s);
-            }
+            defaultHeightTorso = torsoY;
+            heightJump = Mathf.Abs(neckY - torsoY) / 2f;
+            
+            previous_z_left = Mathf.Floor(skeleton.GetJoint(JointType.LeftKnee).Real.Z / 100f);
+            previous_z_right = Mathf.Floor(skeleton.GetJoint(JointType.RightKnee).Real.Z / 100f);
+
+            isInitialized = true;
+            return false;
         }
 
-        return newSkeleton;
+        float distance = torsoY - defaultHeightTorso;
+        
+        return distance >= heightJump;
     }
 
-    public void Movement_Stepping(Skeleton userData)
+    // ──────────────────────────────────────────────────────────────────
+    // CHẠY: Thay đổi từ việc check Y sang check Z theo HurdleRaceNew
+    // ──────────────────────────────────────────────────────────────────
+    void DetectRunning(Skeleton skeleton)
     {
-        if (IsStepping(userData) /*&& Time.time - lastStepTime > 0.5f*/)
+        float zLeftKnee = Mathf.Floor(skeleton.GetJoint(JointType.LeftKnee).Real.Z / 100f);
+        float zRightKnee = Mathf.Floor(skeleton.GetJoint(JointType.RightKnee).Real.Z / 100f);
+
+        if ((previous_z_left >= previous_z_right && zLeftKnee < zRightKnee) || 
+            (previous_z_right >= previous_z_left && zLeftKnee > zRightKnee))
         {
             stepCount++;
         }
 
-        // Cập nhật tốc độ mỗi giây
-        if (Time.frameCount % (int)(speedUpdateInterval / Time.deltaTime) == 0)
+        previous_z_left = zLeftKnee;
+        previous_z_right = zRightKnee;
+
+        // ── Lớp 2: Đủ số bước tối thiểu mới tính là chạy ─────────────
+        speedUpdateTimer += Time.deltaTime;
+        if (speedUpdateTimer >= speedUpdateInterval)
         {
-            curSpeed = Mathf.Clamp(stepCount / 2f, 0f, 2f); // Giới hạn từ 0 đến 2
-            stepCount = 0; // reset sau mỗi chu kỳ
+            float targetSpeed = (stepCount >= minStepsPerSecond)
+                                ? Mathf.Clamp(stepCount / 2f, 0f, 2f)
+                                : 0f;
+
+            // ── Lớp 3: Lerp mượt (không dừng/tăng đột ngột) ──────────
+            float lerpRate = (targetSpeed > curSpeed) ? speedLerpUp : speedLerpDown;
+            curSpeed = Mathf.Lerp(curSpeed, targetSpeed, Time.deltaTime * lerpRate);
+
+            stepCount        = 0;
+            speedUpdateTimer = 0f;
         }
-    } // 0
-    bool IsStepping(Skeleton skeleton)
+    }
+
+    // ──────────────────────────────────────────────────────────────────
+    // LỌC SKELETON theo khoảng cách Z (dùng khi cần)
+    // ──────────────────────────────────────────────────────────────────
+    public List<Skeleton> FilterSkeleton(List<Skeleton> user)
     {
-        nuitrack.Vector3 leftFoot = skeleton.GetJoint(JointType.LeftKnee).Real;
-        nuitrack.Vector3 rightFoot = skeleton.GetJoint(JointType.RightKnee).Real;
-        nuitrack.Vector3 torso = skeleton.GetJoint(JointType.Torso).Real;
-
-        float baseFootHeight = torso.Y * 0.1f;
-
-        bool leftStep = leftFoot.Z - rightFoot.Z > 5f;
-        bool rightStep = rightFoot.Z - leftFoot.Z > 5f;
-
-        Debug.LogWarning("AAAAAAAAAAAAAAAA" + (leftFoot.Z - rightFoot.Z) + " ; " + (rightFoot.Z - leftFoot.Z));
-
-        bool r = leftStep && !isPreLeft || rightStep && !isPreRight;
-
-        isPreLeft = leftStep;
-        isPreRight = rightStep;
-        return r;
-
-    }
-
-    private void OnCollisionEnter(Collision collision) {
-        if(collision.gameObject.layer == 13) {
-            StartCoroutine(OnObstacle());
+        List<Skeleton> newSkeleton = new List<Skeleton>();
+        foreach (Skeleton s in user)
+        {
+            float z = s.GetJoint(JointType.Torso).Real.Z / 1000f;
+            if (z >= minMainZ && z <= maxMainZ)
+                newSkeleton.Add(s);
         }
+        return newSkeleton;
     }
+
+    // ──────────────────────────────────────────────────────────────────
+    // VA CHẠM VỚI CHƯỚNG NGẠI VẬT (Layer 13)
+    // ──────────────────────────────────────────────────────────────────
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (!isDead && !isJump && collision.gameObject.layer == 13)
+            StartCoroutine(OnObstacle());
+    }
+
     IEnumerator OnObstacle()
     {
-        curSpeed = 0;
-        pathFollower.speed = 0;
-        isDead = true;
+        curSpeed              = 0;
+        pathFollower.speed    = 0;
+        isDead                = true;
         animator.Play("death");
         yield return new WaitForSeconds(3.5f);
         pathFollower.distanceTravelled = 0;
@@ -174,7 +208,11 @@ public class HurdleRaceController : MonoBehaviour
         animator.Play("idle");
     }
 
-    IEnumerator OnJump() {
+    // ──────────────────────────────────────────────────────────────────
+    // NHẢY COROUTINE
+    // ──────────────────────────────────────────────────────────────────
+    IEnumerator OnJump()
+    {
         isJump = true;
         yield return new WaitForSeconds(0.9f);
         isJump = false;

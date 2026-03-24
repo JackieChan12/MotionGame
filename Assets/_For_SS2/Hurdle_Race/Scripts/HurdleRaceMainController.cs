@@ -167,7 +167,7 @@ public class HurdleRaceMainController : MonoBehaviour
     }
 
     public void ShowPlayer(List<Skeleton> user) {
-        if (player01.startGame) return;
+        //if (player01.startGame) return;
         int c = user.Count;
         //c = count;
         txtCountPlayer.text = $"{c} players";
