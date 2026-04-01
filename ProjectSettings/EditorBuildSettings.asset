@@ -70,15 +70,12 @@ EditorBuildSettings:
     path: Assets/Scenes/InputSceneSS2.unity
     guid: 9faec113bb645ac4c95eda1ce7227fc8
   - enabled: 1
-    path: Assets/_For_SS2/Animal_Imitation_Race/Scene/AnimalRaceMain.unity
-    guid: 22ecf011f326066469f38f517d6baf38
-  - enabled: 1
     path: Assets/Scenes/OutputScene.unity
     guid: 5220a782ba7436545a0f89a6fb065711
   - enabled: 1
-    path: Assets/_For_SS2/Hurdle_Race/Hurdle_race_main.unity
+    path: Assets/_For_SS2/Hurdle_Race/Hurdle_race_mainNew.unity
     guid: da00ef47472a739449fa02202004601d
   - enabled: 1
-    path: Assets/_For_SS2/Swimming_Race/Scene/Swimming_race_main.unity
-    guid: 53c1fd1675552cd448865212b205687a
+    path: Assets/_For_SS2/Animal_Imitation_Race/Scene/AnimalRaceMainNew.unity
+    guid: 69fae21928a0e9f458ba7d2dce43da31
   m_configObjects: {}

@@ -242,7 +242,6 @@ public class NuitrackManager : MonoBehaviour
             nuitrack.Nuitrack.Init();
 #endif
         Debug.Log("Init OK");
-        nuitrack.Nuitrack.SetConfigValue("Skeletonization.ActiveUsers", "6");
         depthSensor = nuitrack.DepthSensor.Create();
 
         colorSensor = nuitrack.ColorSensor.Create();

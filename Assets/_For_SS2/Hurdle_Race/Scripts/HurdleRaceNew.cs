@@ -246,7 +246,7 @@ public class HurdleRaceNew : MonoBehaviour
                 float distanceHip = xMidHip - x_Hip;
                 float distanceHip_Shoulder = xMidHip - xMidShoulder;
 
-                character.rotation = Quaternion.Euler(character.rotation.eulerAngles.x, character.rotation.eulerAngles.y, -distanceHip_Shoulder * 2);
+                //character.rotation = Quaternion.Euler(character.rotation.eulerAngles.x, character.rotation.eulerAngles.y, -distanceHip_Shoulder * 2);
 
                 //if (/*distanceHip > 10 ||*/ Math.Abs(distanceHip_Shoulder) > balance_threshold && haveFall)
                 //{

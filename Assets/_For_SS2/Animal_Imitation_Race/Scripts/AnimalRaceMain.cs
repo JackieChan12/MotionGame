@@ -1,5 +1,3 @@
-using DG.Tweening;
-using PathCreation;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -7,18 +5,16 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-public class HurdleRaceMain : MonoBehaviour
+public class AnimalRaceMain : MonoBehaviour
 {
     [Header("Player Control")]
-    public HurdleRaceNew player01;
-    public HurdleRaceNew player02;
+    public AnimalRaceNew player01;
+    public AnimalRaceNew player02;
 
     public Camera cameraPlayer01;
     public Camera cameraPlayer02;
     public GameObject point01;
     public GameObject point02;
-
-    public List<GameObject> listTrap = new List<GameObject>();
 
     [Header("Game")]
 
@@ -27,8 +23,6 @@ public class HurdleRaceMain : MonoBehaviour
     bool countdownFirst = true;
 
     [Header("Instruction")]
-    public TMP_Text textInstruction;
-    public GameObject objInstruction;
     public float instructionTime = 5f;
     private bool isShowingInstruction = true;
 
@@ -57,46 +51,66 @@ public class HurdleRaceMain : MonoBehaviour
     public float pointTeam1 = 0;
     public float pointTeam2 = 0;
 
+    private void Reset()
+    {
+        var allPlayers = FindObjectsOfType<AnimalRaceNew>();
+        if (allPlayers.Length > 0 && player01 == null) { player01 = allPlayers[0]; player01.indexPlayer = 0; }
+        if (allPlayers.Length > 1 && player02 == null) { player02 = allPlayers[1]; player02.indexPlayer = 1; }
+
+        if (textPoint01 == null) textPoint01 = GameObject.Find("TextPoint01")?.GetComponent<TMP_Text>();
+        if (textPoint02 == null) textPoint02 = GameObject.Find("TextPoint02")?.GetComponent<TMP_Text>();
+        if (textTime == null) textTime = GameObject.Find("TextTime")?.GetComponent<TMP_Text>();
+        if (imageTime == null) imageTime = GameObject.Find("ImageTime")?.GetComponent<Image>();
+        if (objectCountDown == null) objectCountDown = GameObject.Find("ObjectCountDown");
+        if (noticeTimeOut == null) noticeTimeOut = GameObject.Find("NoticeTimeOut");
+        if (audioController == null) audioController = FindObjectOfType<AudioController>();
+    }
+
     [System.Obsolete]
     void Start()
     {
         if (InputManager.Instance != null) SetupInput(InputManager.Instance.mode, InputManager.Instance.difficulty, InputManager.Instance.players, InputManager.Instance.playTime, InputManager.Instance.explanation, InputManager.Instance.photoTime);
-        //textTime.text = "0";
+        
         if(audioController) audioController.audioSourceBGM.pitch = 1.49f;
-        foreach (GameObject trap in listTrap) trap.SetActive(false);
-        listTrap[(int)difficulty].SetActive(true);
-        SetupGame(mode);
+        
+        if (player01 != null) { player01.indexPlayer = 0; player01.RandomAnimal(difficulty); }
+        if (player02 != null) { player02.indexPlayer = 1; player02.RandomAnimal(difficulty); }
 
+        SetupGame(mode);
     }
 
-    // Update is called once per frame
     [System.Obsolete]
     void Update()
     {
 
+        //if (Input.GetKeyDown(KeyCode.Escape))
+        //{
+        //    if (nuitrack.Nuitrack.GetModule(nuitrack.nuitrack_device_api.depth_sensor) != null) nuitrack.Nuitrack.Release();
+        //    SceneManager.LoadSceneAsync("InputScene");
+        //}
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             nuitrack.Nuitrack.Release();
             SceneManager.LoadSceneAsync("InputSceneSS2");
             //Application.Quit(); 
         }
-        pointTeam1 = player01.pointDistance;
-        pointTeam2 = player02.pointDistance;
-        textPoint01.text = pointTeam1.ToString("F0") + "M";
-        textPoint02.text = pointTeam2.ToString("F0") + "M";
+        if (player01 != null) pointTeam1 = player01.pointDistance;
+        if (player02 != null) pointTeam2 = player02.pointDistance;
+        
+        if (textPoint01 != null) textPoint01.text = pointTeam1.ToString("F0") + "M";
+        if (textPoint02 != null) textPoint02.text = pointTeam2.ToString("F0") + "M";
 
         if (isShowingInstruction)
         {
-            if (textInstruction != null && !objInstruction.activeSelf)
-                objInstruction.SetActive(true);
             if (objectCountDown != null && objectCountDown.activeSelf)
                 objectCountDown.SetActive(false);
-            textInstruction.text = Command.Instance.CommmandTutorialHurdleRace;
+
             instructionTime -= Time.deltaTime;
             if (instructionTime <= 0)
             {
                 isShowingInstruction = false;
-                if (textInstruction != null) objInstruction.SetActive(false);
+                if (player01 != null) player01.HideInstruction();
+                if (player02 != null) player02.HideInstruction();
                 if (objectCountDown != null) objectCountDown.SetActive(true);
             }
             return;
@@ -108,19 +122,16 @@ public class HurdleRaceMain : MonoBehaviour
             countDown -= Time.deltaTime;
             if (countDown <= 0)
             {
-                //audioController?.PlayAudioStartGame();
                 countdownFirst = false;
                 countDown = 5;
-                player01.turnPlayer = true;
-                player02.turnPlayer = true;
-                player01.StartRun();
-                player02.StartRun();
+                if (player01 != null) player01.StartRun();
+                if (player02 != null) player02.StartRun();
             }
             return;
         }
 
         if (audioController) audioController.audioSourceBGM.pitch = 1f;
-        if (textTime != null) textTime.text = (playTime - timeCount).ToString("N0");//FormatTime(timeCount);
+        if (textTime != null) textTime.text = (playTime - timeCount).ToString("N0");
         if (imageTime != null) imageTime.fillAmount = (float)((playTime - timeCount) / playTime);
 
 
@@ -134,7 +145,10 @@ public class HurdleRaceMain : MonoBehaviour
         if (timeCount < playTime)
         {
             timeCount += Time.deltaTime;
-            if ((mode == Mode.Scenario && player01.finish && player02.finish) || (mode == Mode.EachGame && player01.finish))
+            bool p1Finish = player01 != null && player01.finish;
+            bool p2Finish = player02 != null && player02.finish;
+
+            if ((mode == Mode.Scenario && p1Finish && p2Finish) || (mode == Mode.EachGame && p1Finish))
             {
                 timeCount = playTime;
             }
@@ -146,11 +160,7 @@ public class HurdleRaceMain : MonoBehaviour
                 NextPlayer();
                 objectCountDown?.SetActive(true);
             }
-            else
-            {
-
-                //audioController?.PlayAudioOut();
-            }
+            
             countDown -= Time.deltaTime;
             return;
         }
@@ -164,42 +174,36 @@ public class HurdleRaceMain : MonoBehaviour
             {
                 noticeTimeOut?.SetActive(false);
 
-                player01.turnPlayer = true;
-                player02.turnPlayer = true;
-                player01.StartRun();
-                player02.StartRun();
+                if (player01 != null) player01.StartRun();
+                if (player02 != null) player02.StartRun();
             }
             timeCount = 0;
             countDown = 5;
         }
     }
 
-    [System.Obsolete]
     void NextPlayer()
     {
         if (noticeTimeOut != null) noticeTimeOut?.SetActive(true);
         countPlayers++;
-        player01.ChangePlayer();
-        player02.ChangePlayer();
+        if (player01 != null) player01.ChangePlayer();
+        if (player02 != null) player02.ChangePlayer();
     }
-
 
     public void SetupGame(Mode mode = Mode.EachGame)
     {
         if (mode == Mode.EachGame)
         {
-            player02.gameObject.SetActive(false);
-            cameraPlayer01.rect = new Rect(0, 0, 1, 1);
-            point02.SetActive(false);
-            //lands02.SetActive(false);
+            if (player02 != null) player02.gameObject.SetActive(false);
+            if (cameraPlayer01 != null) cameraPlayer01.rect = new Rect(0, 0, 1, 1);
+            if (point02 != null) point02.SetActive(false);
         }
         else if (mode == Mode.Scenario)
         {
-            player02.gameObject.SetActive(true);
-            cameraPlayer01.rect = new Rect(0, 0, 0.5f, 1);
-            cameraPlayer02.rect = new Rect(0.5f, 0, 0.5f, 1);
-            point02.SetActive(true);
-            //lands02.SetActive(true);
+            if (player02 != null) player02.gameObject.SetActive(true);
+            if (cameraPlayer01 != null) cameraPlayer01.rect = new Rect(0, 0, 0.5f, 1);
+            if (cameraPlayer02 != null) cameraPlayer02.rect = new Rect(0.5f, 0, 0.5f, 1);
+            if (point02 != null) point02.SetActive(true);
         }
     }
 
@@ -215,7 +219,7 @@ public class HurdleRaceMain : MonoBehaviour
 
     public void EndGame()
     {
-        nuitrack.Nuitrack.Release();
+        //if (nuitrack.Nuitrack.GetModule(nuitrack.nuitrack_device_api.depth_sensor) != null) nuitrack.Nuitrack.Release();
         InputManager.Instance?.SavePoint(pointTeam1, pointTeam2);
         SceneManager.LoadSceneAsync(_nextScene);
     }
