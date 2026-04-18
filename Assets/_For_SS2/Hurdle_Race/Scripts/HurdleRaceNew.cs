@@ -1,4 +1,4 @@
-﻿using DG.Tweening;
+using DG.Tweening;
 using nuitrack;
 using PathCreation.Examples;
 using System;
@@ -97,6 +97,7 @@ public class HurdleRaceNew : MonoBehaviour
         previous_z_left = 0;
         previous_z_right = 0;
         step_count = 0;
+        speedUpdateTimer = Time.time; // rolling window start
         beginPos = transform.position;
         colliderControllerAbove.onTrigger = OnTriggerCustom;
         colliderControllerFull.onTrigger = OnTriggerCustom;
@@ -219,8 +220,12 @@ public class HurdleRaceNew : MonoBehaviour
                 float neck = (float)Math.Floor(skeletonData[indexPlayer].GetJoint(JointType.Neck).ToVector3().y / 10);
                 heightJump = Math.Abs(neck - heightTorso) / 2;
             }
-            float distance = 0;
-            if ((previous_z_left >= previous_z_right && (zLeftKnee) < zRightKnee) || (previous_z_right >= previous_z_left && zLeftKnee > (zRightKnee)))
+            // Crossover detection with minimum threshold to avoid noise
+            float crossoverThreshold = 0.3f; // minimum difference after crossing (3cm units)
+            bool crossedLeftForward  = previous_z_left >= previous_z_right && zLeftKnee  < zRightKnee  - crossoverThreshold;
+            bool crossedRightForward = previous_z_right >= previous_z_left  && zRightKnee < zLeftKnee   - crossoverThreshold;
+
+            if (crossedLeftForward || crossedRightForward)
             {
                 step_count += 1;
             }
@@ -228,14 +233,17 @@ public class HurdleRaceNew : MonoBehaviour
             previous_z_left = zLeftKnee;
             previous_z_right = zRightKnee;
 
-            speedUpdateTimer += Time.deltaTime;
-            if (speedUpdateTimer >= speedUpdateInterval)
+            // Rolling time window (same approach as CharacterMovement, but keeps Lerp smoothing)
+            float elapsed_time = Time.time - speedUpdateTimer;
+            if (elapsed_time >= speedUpdateInterval)
             {
-                targetSpeed = (step_count >= minStepsPerSecond) ? Mathf.Clamp(step_count / 2f, 0f, 4f) : 0f;
+                float stepPerSecond = step_count / elapsed_time;
+                targetSpeed = (stepPerSecond >= minStepsPerSecond) ? Mathf.Clamp(stepPerSecond / 2f, 0f, 4f) : 0f;
                 step_count = 0;
-                speedUpdateTimer = 0f;
+                speedUpdateTimer = Time.time; // rolling reset
             }
 
+            float distance = 0;
             if (!saveHeightTorso)
             {
                 defaultHeightTorso = heightTorso;

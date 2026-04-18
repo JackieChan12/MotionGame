@@ -1,0 +1,50 @@
+{
+  "frameRate": 30.0,
+  "keyframes": [
+    {
+      "time": 0.0,
+      "bones": [
+        {
+          "name": "LeftArm",
+          "localPosition": { "x": 0.0, "y": 0.0, "z": 0.0 },
+          "localRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 }
+        },
+        {
+          "name": "RightArm",
+          "localPosition": { "x": 0.0, "y": 0.0, "z": 0.0 },
+          "localRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 }
+        }
+      ]
+    },
+    {
+      "time": 0.5,
+      "bones": [
+        {
+          "name": "LeftArm",
+          "localPosition": { "x": 0.0, "y": 0.0, "z": 0.0 },
+          "localRotation": { "x": 0.0, "y": 0.0, "z": 0.7071068, "w": 0.7071068 }
+        },
+        {
+          "name": "RightArm",
+          "localPosition": { "x": 0.0, "y": 0.0, "z": 0.0 },
+          "localRotation": { "x": 0.0, "y": 0.0, "z": -0.7071068, "w": 0.7071068 }
+        }
+      ]
+    },
+    {
+      "time": 1.0,
+      "bones": [
+        {
+          "name": "LeftArm",
+          "localPosition": { "x": 0.0, "y": 0.0, "z": 0.0 },
+          "localRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 }
+        },
+        {
+          "name": "RightArm",
+          "localPosition": { "x": 0.0, "y": 0.0, "z": 0.0 },
+          "localRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 }
+        }
+      ]
+    }
+  ]
+}
