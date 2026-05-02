@@ -35,7 +35,7 @@ public class HamburgerHouse : MonoBehaviour
     [Header("\nUI")]
     public TMP_Text textPoint;
     public TMP_Text textTime;
-    public Image imageTime;
+    public UnityEngine.UI.Image imageTime;
     public GameObject objectCountDown;
     public GameObject noticeTimeOut;
 

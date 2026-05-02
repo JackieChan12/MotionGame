@@ -140,7 +140,7 @@ public class HurdleRaceNew : MonoBehaviour
         List<Skeleton> userData = NuitrackManager.SkeletonTracker.GetSkeletonData().Skeletons.ToList();
 
         var sortedUsers = userData.OrderByDescending(user => user.GetJoint(nuitrack.JointType.Waist).Proj.X).ToList();
-        sortedUsers = FilterSkeleton(sortedUsers);
+        //sortedUsers = FilterSkeleton(sortedUsers);
         OnSkeletonUpdate(sortedUsers);
         //transform.Translate(UnityEngine.Vector3.forward * characterSpeed * Time.deltaTime);
         if (startRun) pathFollower.speed = characterSpeed;

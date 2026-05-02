@@ -13,7 +13,7 @@ public class GivenShape : MonoBehaviour
     public float maxSpeed = 6f;
     public int indexImage = 1;
     public int indexGiven = 1;
-    public Image image;
+    public UnityEngine.UI.Image image;
     public Collider2D colliderF;
     public delegate void choosenEvent(int index, bool addpoint, int pointN, Vector3 pos, bool isLeft);
     public choosenEvent choosen;
