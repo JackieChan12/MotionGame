@@ -1,0 +1,30 @@
+{
+  "metadata": {
+    "generator": "AI Generator",
+    "version": "2.0",
+    "frameRate": 30,
+    "sourceHeight": 1.8,
+    "boneNames": ["Hips", "RightUpperArm"]
+  },
+  "keyframes": [
+    {
+      "time": 0.0,
+      "bones": [
+        { "name": "Hips", "localPos": {"x":0,"y":0.9,"z":0}, "localRot": {"x":0,"y":0,"z":0,"w":1} },
+        { "name": "RightUpperArm", "localRot": {"x":0,"y":0,"z":0.4,"w":0.916} }
+      ]
+    },
+    {
+      "time": 1.0,
+      "bones": [
+        { "name": "RightUpperArm", "localRot": {"x":0,"y":0,"z":0.5,"w":0.866} }
+      ]
+    },
+    {
+      "time": 2.0,
+      "bones": [
+        { "name": "RightUpperArm", "localRot": {"x":0,"y":0,"z":0.4,"w":0.916} }
+      ]
+    }
+  ]
+}

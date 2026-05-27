@@ -223,18 +223,6 @@ public class CharacterMovement : MonoBehaviour
 
             float posX = posInCanvas.x;
             float distanceMidPoint = midPoint - XTorso;
-            //if (posX < maxX && posX > minX)
-            //{
-            //    land = 0;
-            //}
-            //else if (posX < minX)
-            //{
-            //    land = 1;
-            //}
-            //else if (posX > maxX)
-            //{
-            //    land = -1;
-            //}
             if(Math.Abs(distanceMidPoint) < distanceToMidDefault)
             {
                 land = 0;
@@ -290,25 +278,6 @@ public class CharacterMovement : MonoBehaviour
             if (elapsed_time >= 1f)
             {
                 float stepPerSecond = step_count / elapsed_time;
-                //if (distance >= 7f)
-                //{
-                //    if(characterSpeed == 0)
-                //    {
-                //        characterSpeed = walkSpeed;
-                //    }
-                //    animator.Play(NameAnim.jump);
-                //    Debug.LogWarning("JUMP");
-                //}
-                //else if (distance <= -7f)
-                //{
-                //    if (characterSpeed == 0)
-                //    {
-                //        characterSpeed = walkSpeed;
-                //    }
-                //    animator.Play(NameAnim.slide);
-                //    Debug.LogWarning("SLIDE");
-                //}
-                //else
                 if (stepPerSecond > 0 && stepPerSecond < RUN_THRESHOLD)
                 {
                     characterSpeed = walkSpeed;

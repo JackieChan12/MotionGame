@@ -1,0 +1,30 @@
+{
+  "metadata": {
+    "generator": "AI Generator",
+    "version": "2.0",
+    "frameRate": 30,
+    "sourceHeight": 1.8,
+    "boneNames": ["Hips", "Spine"]
+  },
+  "keyframes": [
+    {
+      "time": 0.0,
+      "bones": [
+        { "name": "Hips", "localPos": {"x":0,"y":0.9,"z":0} }
+      ]
+    },
+    {
+      "time": 0.3,
+      "bones": [
+        { "name": "Hips", "localPos": {"x":0.4,"y":0.8,"z":0} },
+        { "name": "Spine", "localRot": {"x":0,"y":0,"z":-0.2,"w":0.98} }
+      ]
+    },
+    {
+      "time": 0.8,
+      "bones": [
+        { "name": "Hips", "localPos": {"x":0,"y":0.9,"z":0} }
+      ]
+    }
+  ]
+}

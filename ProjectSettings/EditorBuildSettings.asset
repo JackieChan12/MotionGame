@@ -72,10 +72,13 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/OutputScene.unity
     guid: 5220a782ba7436545a0f89a6fb065711
-  - enabled: 1
+  - enabled: 0
     path: Assets/_For_SS2/Hurdle_Race/Hurdle_race_mainNew.unity
     guid: da00ef47472a739449fa02202004601d
   - enabled: 1
     path: Assets/_For_SS2/Animal_Imitation_Race/Scene/AnimalRaceMainNew.unity
     guid: 69fae21928a0e9f458ba7d2dce43da31
+  - enabled: 1
+    path: Assets/_For_SS2/Hurdle_Race/TightropeWalkingTest.unity
+    guid: a6857a3d67ebf614e960e88e7cde2cd1
   m_configObjects: {}

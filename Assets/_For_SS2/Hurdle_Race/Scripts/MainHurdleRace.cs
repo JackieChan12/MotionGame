@@ -1,17 +1,15 @@
-using DG.Tweening;
 using PathCreation;
-using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-public class TightropeController : MonoBehaviour
+public class MainHurdleRace : MonoBehaviour
 {
     [Header("Player Control")]
-    public CharacterMoveOnRope player01;
-    public CharacterMoveOnRope player02;
+    public PlayerHurdleRace player01;
+    public PlayerHurdleRace player02;
 
     public Camera cameraPlayer01;
     public Camera cameraPlayer02;
@@ -20,18 +18,7 @@ public class TightropeController : MonoBehaviour
     public GameObject point01;
     public GameObject point02;
 
-    public GameObject lands01;
-    public GameObject lands02;
-
-    // [Header("Tight Rope")]
-    // public GenPathRope rope_30s;
-    // public GenPathRope rope_60s;
-    // public GenPathRope rope_90s;
-    // public GenPathRope rope_120s;
-
-    //public GenPathRope rope_current;
-
-    public List<Trap> listTrap = new List<Trap>();
+    
     public List<GameObject> listTrapInstance = new List<GameObject>();
 
     [Header("Game")]
@@ -70,10 +57,20 @@ public class TightropeController : MonoBehaviour
         if (InputManager.Instance != null) SetupInput(InputManager.Instance.mode, InputManager.Instance.difficulty, InputManager.Instance.players, InputManager.Instance.playTime, InputManager.Instance.explanation, InputManager.Instance.photoTime);
         //textTime.text = "0";
         audioController.audioSourceBGM.pitch = 1.49f;
-        player01.haveFall = difficulty != Difficulty.Easy;
-        player02.haveFall = difficulty != Difficulty.Easy;
+        //player01.haveFall = difficulty != Difficulty.Easy;
+        //player02.haveFall = difficulty != Difficulty.Easy;
         SetupGame(mode);
-        SetPosPlayer();
+        for (int i = 0; i < listTrapInstance.Count; i++)
+        {
+            if (i == (int)difficulty)
+            {
+                listTrapInstance[i].SetActive(true);
+            }
+            else
+            {
+                listTrapInstance[i].SetActive(false);
+            }
+        }
 
     }
 
@@ -172,7 +169,7 @@ public class TightropeController : MonoBehaviour
         countPlayers++;
         player01.ChangePlayer();
         player02.ChangePlayer();
-        RandomTrap();
+        //RandomTrap();
     }
 
 
@@ -205,67 +202,30 @@ public class TightropeController : MonoBehaviour
         photoTime = pT;
     }
 
-    [System.Obsolete]
-    public void SetPosPlayer()
-    {
-        // switch (playTime)
-        // {
-        //     case 30:
-        //         rope_current = rope_30s;
-        //         break;
-        //     case 60:
-        //         rope_current = rope_60s;
-        //         break;
-        //     case 90:
-        //         rope_current = rope_90s;
-        //         break;
-        //     case 120:
-        //         rope_current = rope_120s;
-        //         break;
-        //     case 10:
-        //         rope_current = rope_30s;
-        //         break;
-        // }
-        // player01.pathFollower.pathCreator = rope_current.GetComponent<PathCreator>();
-        // player02.pathFollower.pathCreator = rope_current.GetComponent<PathCreator>();
-        // player01.transform.position = rope_current.ST.position;
-        // player02.transform.position = rope_current.ST.position;
-        // player01.transform.LookAt(rope_current.END);
-        // player02.transform.LookAt(rope_current.END);
-
-        //RandomTrap();
-    }
-
-    [System.Obsolete]
-    public void RandomTrap()
-    {
-        foreach(var p in listTrapInstance)
-        {
-            Destroy(p.gameObject); 
-        }
-        listTrapInstance.Clear();
-
-        int disTrap = 1;
-        switch (difficulty)
-        {
-            case Difficulty.Hard:
-                disTrap = 2;
-                break;
-            case Difficulty.Normal:
-                disTrap = 3;
-                break;
-            case Difficulty.Easy:
-                disTrap = 4;
-                break;
-        }
-
-        // for (int i = 2; i < rope_current.waypoints.Length-1; i += disTrap)
-        // {
-        //     GameObject obj = Instantiate(listTrap[Random.RandomRange(0, listTrap.Count)].gameObject, rope_current.waypoints[i].position, Quaternion.identity).gameObject;
-        //     obj.SetActive(true);
-        //     listTrapInstance.Add(obj);
-        // }
-    }
+    // [System.Obsolete]
+    // public void RandomTrap()
+    // {
+    //     foreach(var p in listTrapInstance)
+    //     {
+    //         Destroy(p.gameObject); 
+    //     }
+    //     listTrapInstance.Clear();
+    //
+    //     int disTrap = 1;
+    //     switch (difficulty)
+    //     {
+    //         case Difficulty.Hard:
+    //             disTrap = 2;
+    //             break;
+    //         case Difficulty.Normal:
+    //             disTrap = 3;
+    //             break;
+    //         case Difficulty.Easy:
+    //             disTrap = 4;
+    //             break;
+    //     }
+    //
+    // }
 
     public void EndGame()
     {
