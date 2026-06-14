@@ -51,15 +51,15 @@ public class CharacterMoveOnRope : MonoBehaviour
     public ColliderController colliderControllerUnder;
     public ColliderController colliderControllerAbove;
 
-    public Transform _camera;
-    public Transform _targetCamera;
-    public Transform _finishCamera;
+    //public Transform _camera;
+    //public Transform _targetCamera;
+    //public Transform _finishCamera;
 
-    Tween tweenCamMove;
-    Tween tweenCamRotate;
+    //Tween tweenCamMove;
+    //Tween tweenCamRotate;
 
-    public UnityEngine.Vector3 posCamera;
-    public Quaternion quaternionCamera;
+    //public UnityEngine.Vector3 posCamera;
+    //public Quaternion quaternionCamera;
 
     public AudioController audioController;
     public float pointDistance = 0;
@@ -82,13 +82,13 @@ public class CharacterMoveOnRope : MonoBehaviour
         //NuitrackManager.SkeletonTracker.OnSkeletonUpdateEvent += OnSkeletonUpdate;
         jumping = false;
         audioController = FindObjectOfType<AudioController>();
-        character.DOLocalRotate(new UnityEngine.Vector3(0, 180, 0), 0.1f);
+        character.DOLocalRotate(new UnityEngine.Vector3(0, 180, 90), 0.1f);
         previous_z_left = 0;
         previous_z_right = 0;
         step_count = 0;
         beginPos = transform.position;
-        posCamera = _camera.position;
-        quaternionCamera = _camera.rotation;
+        //posCamera = _camera.position;
+        //quaternionCamera = _camera.rotation;
         colliderControllerAbove.onTrigger = OnTriggerCustom;
         colliderControllerFull.onTrigger = OnTriggerCustom;
         colliderControllerUnder.onTrigger = OnTriggerCustom;
@@ -139,8 +139,8 @@ public class CharacterMoveOnRope : MonoBehaviour
         if (turnPlayer)
         {
             character.DOLocalRotate(new UnityEngine.Vector3(0, 0, 0), 1f);
-            tweenCamMove = _camera.DOMove(_targetCamera.position, 1);
-            tweenCamRotate = _camera.DORotateQuaternion(_targetCamera.rotation, 1);
+            //tweenCamMove = _camera.DOMove(_targetCamera.position, 1);
+            //tweenCamRotate = _camera.DORotateQuaternion(_targetCamera.rotation, 1);
             turnPlayer = false;
             pointDistance = pointPrePlayer;
         }
@@ -345,8 +345,8 @@ public class CharacterMoveOnRope : MonoBehaviour
     [Obsolete]
     public void ChangePlayer()
     {
-        tweenCamMove.Kill();
-        tweenCamRotate.Kill();
+        //tweenCamMove.Kill();
+        //tweenCamRotate.Kill();
 
         character.DOLocalRotate(new UnityEngine.Vector3(0, 180, 0), 0.1f);
         pointPrePlayer = pointDistance;
@@ -359,8 +359,8 @@ public class CharacterMoveOnRope : MonoBehaviour
         characterSpeed = 0;
         pathFollower.speed = characterSpeed/2;
         pathFollower.distanceTravelled = 0;
-        tweenCamMove = _camera.DOMove(posCamera, 1);
-        tweenCamRotate = _camera.DORotateQuaternion(quaternionCamera, 1);
+       // tweenCamMove = _camera.DOMove(posCamera, 1);
+        //tweenCamRotate = _camera.DORotateQuaternion(quaternionCamera, 1);
     }
 
     void AddJumpEvent()
@@ -413,8 +413,8 @@ public class CharacterMoveOnRope : MonoBehaviour
     public void EndWhirlJump()
     {
         animator.Play("Idle & waving");
-        tweenCamMove = _camera.DOMove(_finishCamera.position, .5f);
-        tweenCamRotate = _camera.DORotateQuaternion(_finishCamera.rotation, .5f);
+        //tweenCamMove = _camera.DOMove(_finishCamera.position, .5f);
+        //tweenCamRotate = _camera.DORotateQuaternion(_finishCamera.rotation, .5f);
         //character.DOLocalRotate(new UnityEngine.Vector3(0, 180, 0), 1f);
     }
 
